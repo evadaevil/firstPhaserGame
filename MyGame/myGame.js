@@ -10,17 +10,17 @@ game_state.main.prototype = {
 
 
     preload: function() {
+        game.load.image('star', 'assets/CookieSprite.png');
         game.load.image('sky', 'assets/sky.png');
         game.load.image('ground', 'assets/platform.png');
-        game.load.image('star', 'assets/star.png');
-        game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
+        game.load.spritesheet('dude', 'assets/EvaSprite.png', 200, 200);
 
     },
 
 
     create: function() {
-        game.add.sprite(0, 0, 'sky');
         game.add.sprite(0, 0, 'star');
+        game.add.sprite(0, 0, 'sky');
         
         //platforms groups
         this.platforms = game.add.group();
@@ -38,14 +38,36 @@ game_state.main.prototype = {
         ground.body.immovable = true;
         
         //ledges
-        var ledge = this.platforms.create(50, 150, 'ground');
+        var ledge = this.platforms.create(170, 250, 'ground');
         ledge.body.immovable = true;
+        ledge.scale.setTo(.35, .7);
+         
+        ledge = this.platforms.create(80, 400, 'ground');
+        ledge.body.immovable = true;
+        ledge.scale.setTo(.4, .7);
+        
+        ledge = this.platforms.create(320, 175, 'ground');
+        ledge.body.immovable = true;
+        ledge.scale.setTo(.35, .7);
+        
+        ledge = this.platforms.create(380, 328, 'ground');
+        ledge.body.immovable = true;
+        ledge.scale.setTo(.35, .7);
+        
+        ledge = this.platforms.create(580, 185, 'ground');
+        ledge.body.immovable = true;
+        ledge.scale.setTo(.35, .7);
+        
+        ledge = this.platforms.create(580, 400, 'ground');
+        ledge.body.immovable = true;
+        ledge.scale.setTo(.35, .7);
         
         //arcade physics system
         game.physics.startSystem(Phaser.Physics.ARCADE);
         
         //player and its settings
-        this.player = game.add.sprite(32, game.world.height - 150, 'dude');
+        this.player = game.add.sprite(32, game.world.height - 250, 'dude');
+        this.player.scale.setTo(0.1,0.1);
         
         //enable physics on player
         game.physics.arcade.enable(this.player);
@@ -54,9 +76,9 @@ game_state.main.prototype = {
         this.player.body.collideWorldBounds = true;
         
         //animations
-        this.player.animations.add('left', [0, 1, 2, 3], 10, true);
-        this.player.animations.add('right', [5, 6, 7, 8], 10, true);
-        
+        this.player.animations.add('left', [1, 2], 10, true);
+        this.player.animations.add('right', [3, 4], 10, true);
+        this.player.scale.setTo(0.8, 0.8);
         //our controls
         this.cursors = game.input.keyboard.createCursorKeys();
         
@@ -78,6 +100,13 @@ game_state.main.prototype = {
             //gives stars random bounce values
             star.body.bounce.y = 0.7 + Math.random() * 0.2;
         }
+             //score
+            this.scoreText = game.add.text( 16, 16, 'score: 0', {
+            fontSize: '32px',
+            fill: '#000'
+        });
+        this.score = 0;
+        
     },
   
 
@@ -103,13 +132,23 @@ game_state.main.prototype = {
         else {
             //stand still
             this.player.animations.stop();
-            this.player.frame = 4;
+            this.player.frame = 0;
         }
         //jump if touching ground
         if (this.cursors.up.isDown && this.player.body.touching.down){
-            this.player.velocity.y = -350;
+            this.player.body.velocity.y = -350;
         }
         
+               if (this.score === 4) {
+            this.score = 0; };
+        ledge = this.platforms.create(0, 30, 'ground');
+        ledge.body.immovable = true;
+        ledge.scale.setTo(2, 12);
+        game.add.text(16, 16, 'YOU WIN!',
+        {
+           fontSize: '64xp', 
+           fill: '#15f909'
+        })
        
         //collide stars and platforms
         game.physics.arcade.collide(this.stars, this.platforms);
@@ -117,19 +156,28 @@ game_state.main.prototype = {
         //checks overlaps
         game.physics.arcade.overlap(this.player, this.stars, this.collectStar, null, this);
         
-        //score
-        this.scoreText = game.add.text( 16, 16, 'score 0', {
-            fontSize: '32px',
-            fill: '#000'
-        });
+        
+        
+       
+    //size of green light
+    this.player.body.setSize(85,140,47,50);
     },
      collectStar: function(player, star){
          //removes star
          star.kill();
+         this.score++;
+         this.scoreText.text = "score: " + this.score;
+         
+         
+           //create star insode of group
+            star = this.stars.create(Math.random() *600, 0, 'star');
+            
+            //enable gravity
+            star.body.gravity.y = 300;
+            
+            //gives stars random bounce values
+            star.body.bounce.y = 0.7 + Math.random() * 0.2;
     }
- 
+
 };
 game.state.add('main', game_state.main);
-game.state.start('main');
-
-
